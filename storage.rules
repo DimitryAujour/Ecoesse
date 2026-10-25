@@ -1,0 +1,43 @@
+// Ecoesse Commerce Engine — Firebase Storage Security Rules (Task M-01)
+//
+// Design summary:
+// - Admin = a signed-in Firebase Auth user with the custom claim `admin: true`
+//   (see firestore.rules for how to set it). The Admin SDK bypasses these
+//   rules, so server-side uploads are unaffected.
+// - Product images are publicly readable, but only admins may upload,
+//   replace, or delete them.
+// - Every other path is admin-only. There is currently no user-upload
+//   feature in the app, so no per-user upload path is opened here.
+//   If one is added later, add a dedicated match for it (for example
+//   /users/{userId}/...) rather than opening the catch-all below.
+
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.admin == true;
+    }
+
+    // Public product images: anyone may download them, only admins
+    // may write them.
+    match /products/{allPaths=**} {
+      allow get: if true;
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Everything else: admin only.
+    // Note: a path under /products/ also matches this rule, but access
+    // is granted if *any* matching rule allows it, so the public get
+    // above is not overridden by the admin-only rule here.
+    match /{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

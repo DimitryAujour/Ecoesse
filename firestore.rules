@@ -1,0 +1,81 @@
+// Ecoesse Commerce Engine — Firestore Security Rules (Task M-01)
+//
+// Design summary:
+// - Admin = a signed-in Firebase Auth user with the custom claim `admin: true`.
+//   Set it once per admin account with the Admin SDK (server-side only, never
+//   from client code), for example:
+//     adminAuth.setCustomUserClaims(uid, { admin: true });
+//   Until that claim is set, the /admin seeder and other client writes will
+//   fail with permission-denied — that is the intended behaviour, not a bug.
+//   The /admin UI does not yet hide admin actions from non-admins; see the
+//   PR description for that follow-up.
+// - The Firebase Admin SDK (used by /api/webhooks/stripe and other server
+//   routes) bypasses these rules entirely, so Stripe webhooks can still
+//   create orders and update site_stats even though clients cannot.
+// - Default is deny: any collection not listed below is inaccessible.
+//
+// Public access preserved:
+// - Active products can be read by anyone (storefront / product pages).
+// - Global impact stats can be read by anyone (live impact ticker).
+//
+// Private by default:
+// - Draft / archived products are not publicly readable.
+// - Orders are admin-only, except that a signed-in customer may read a
+//   single order whose customerUid matches their own UID. Clients never
+//   create orders directly; orders are created server-side by the Stripe
+//   webhook. The public /impact/[orderId] page is currently a demo page
+//   and does not read Firestore, so locking orders does not break it —
+//   when it is wired to real orders, it must fetch via a server route
+//   using the Admin SDK, not via a public client read.
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.admin == true;
+    }
+
+    function isOrderOwner(customerUid) {
+      return isSignedIn()
+        && customerUid != null
+        && request.auth.uid == customerUid;
+    }
+
+    // Products: public read for active products only, admin writes.
+    // The admin seeder writes full product documents with setDoc, so
+    // admin create/update/delete are intentionally not field-validated
+    // here; validation belongs in the seeder / server code.
+    match /products/{productId} {
+      allow read: if isAdmin() || resource.data.status == 'active';
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Global impact stats: public read, admin writes.
+    // The Stripe webhook updates this via the Admin SDK, bypassing rules.
+    match /site_stats/{statId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Orders: sensitive customer / payment data.
+    // Admins may read and list all orders and make all writes.
+    // A customer may read (get, not list) only their own order.
+    // No client may create an order directly.
+    match /orders/{orderId} {
+      allow get: if isAdmin() || isOrderOwner(resource.data.customerUid);
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Everything else: denied by default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
