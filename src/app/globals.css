@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+:root {
+  --color-eco-dark: #0a130f;
+  --color-eco-card: #121e17;
+  --color-eco-card-hover: #18281f;
+  --color-eco-border: rgba(255, 255, 255, 0.08);
+  --color-eco-forest: #2d6a4f;
+  --color-eco-emerald: #10b981;
+  --color-eco-mint: #34d399;
+  --color-eco-cream: #f4f6f0;
+  --color-eco-sand: #d8cbb8;
+}
+
+body {
+  background-color: var(--color-eco-dark);
+  color: var(--color-eco-cream);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  background-image: 
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(16, 185, 129, 0.12), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 90% 80%, rgba(45, 106, 79, 0.15), transparent 60%);
+  background-attachment: fixed;
+}
+
+/* Glassmorphism Card */
+.eco-glass {
+  background: rgba(18, 30, 23, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-eco-border);
+}
+
+.eco-glass-card {
+  background: rgba(18, 30, 23, 0.7);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.eco-glass-card:hover {
+  background: rgba(24, 40, 31, 0.85);
+  border-color: rgba(16, 185, 129, 0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.5), 0 0 20px rgba(16, 185, 129, 0.15);
+}
+
+/* Impact Badge */
+.impact-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.impact-pill-trees {
+  background: rgba(16, 185, 129, 0.15);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.impact-pill-plastic {
+  background: rgba(6, 182, 212, 0.15);
+  color: #67e8f9;
+  border: 1px solid rgba(6, 182, 212, 0.3);
+}
+
+.impact-pill-carbon {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fcd34d;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* Subtle animations */
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 3s ease-in-out infinite;
+}
