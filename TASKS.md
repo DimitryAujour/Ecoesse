@@ -33,6 +33,6 @@ Project Vision: Zero-monthly-overhead headless e-commerce platform for Ecoesse w
 ## Phase 4: Admin Portal & Customer Impact Certificates (Assigned: Muse / Antigravity)
 - [x] `/impact/[orderId]` public verifiable Impact Certificate page with shareable badge and Greenspark transaction record (`src/app/impact/[orderId]/page.tsx`)
 - [x] `/admin` custom dashboard with 1-click product seeding, inventory adjustment, order fulfillment viewer, and Firebase Auth guard (`src/app/admin/page.tsx`)
-- [ ] [TODO - Muse] Author Firestore RBAC Security Rules (`firestore.rules` & `storage.rules`) (Task M-01)
+- [x] Author Firestore RBAC Security Rules (`firestore.rules` & `storage.rules`) (Task M-01 - Completed by Muse & Merged)
 - [ ] [TODO - Muse] Dynamic Impact Certificate Social Sharing Card (`/api/og/impact/[orderId]`) (Task M-03)
 - [ ] [TODO - Muse] Quebec Bill 96 French Localization Pipeline (Task M-04)

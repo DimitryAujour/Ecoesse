@@ -50,15 +50,10 @@
       "assignedTo": "Muse & Antigravity",
       "completed": [
         "Public verifiable Impact Certificate page (/impact/[orderId])",
-        "Custom zero-bloat Admin Portal (/admin) with 1-click product seeder and stock manager"
+        "Custom zero-bloat Admin Portal (/admin) with 1-click product seeder and stock manager",
+        "Firestore and Storage RBAC Security Rules (firestore.rules & storage.rules) (Task M-01)"
       ],
       "nextTasksForMuse": [
-        {
-          "id": "M-01",
-          "title": "Firestore RBAC Security Rules",
-          "priority": "CRITICAL",
-          "description": "Author firestore.rules and storage.rules to enforce Admin-only writes while preserving public product reads."
-        },
         {
           "id": "M-03",
           "title": "Dynamic Impact Certificate Social Sharing Card (OG Images)",
