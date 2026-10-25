@@ -53,6 +53,13 @@ export interface ImpactRecord {
   plasticSaved: number;
   carbonOffset: number;
   verifiedAt: any | null;
+  // Task M-02: 'verified' means Greenspark returned a real transaction id.
+  // 'pending' means payment succeeded but Greenspark has not yet verified
+  // the impact — the impact must not be presented as verified in this state.
+  greensparkStatus?: 'verified' | 'pending';
+  greensparkCertificateUrl?: string | null;
+  greensparkAttempts?: number;
+  greensparkLastError?: string | null;
 }
 
 export interface Order {
