@@ -1,0 +1,82 @@
+{
+  "project": "Ecoesse Commerce Engine",
+  "repository": "https://github.com/DimitryAujour/Ecoesse",
+  "version": "1.0.0",
+  "leadArchitect": "Muse",
+  "builderAgent": "Antigravity",
+  "lastUpdated": "2026-10-25T15:45:00Z",
+  "phases": {
+    "phase_1_scaffolding": {
+      "status": "COMPLETED",
+      "assignedTo": "Antigravity",
+      "deliverables": [
+        "Initialize Next.js 16+ App Router project with TypeScript and Tailwind CSS",
+        "Configure Firebase Client SDK (src/lib/firebase/client.ts)",
+        "Configure Firebase Admin SDK (src/lib/firebase/admin.ts)",
+        "Create TypeScript schemas (src/types/commerce.ts)",
+        "Seed 4 flagship sustainable products (src/lib/seed/products.ts)"
+      ]
+    },
+    "phase_2_storefront_and_cart": {
+      "status": "COMPLETED",
+      "assignedTo": "Antigravity",
+      "deliverables": [
+        "Header with live global impact ticker and Footer",
+        "Persistent CartContext synced with localStorage",
+        "Slide-over Cart Drawer with live ecological calculation",
+        "Product catalog grid with category filters",
+        "Dynamic product details page (/products/[slug]) with specs and quantity stepper"
+      ]
+    },
+    "phase_3_stripe_and_greenspark": {
+      "status": "IN_PROGRESS",
+      "assignedTo": "Antigravity & Muse",
+      "completed": [
+        "Stripe Checkout route (/api/checkout) with automatic CAD tax and line items",
+        "Stripe Webhook handler (/api/webhooks/stripe) for checkout.session.completed",
+        "Greenspark API client (src/lib/greenspark/client.ts) with verifiable ledger generation"
+      ],
+      "nextTasksForMuse": [
+        {
+          "id": "M-02",
+          "title": "Production Greenspark Webhook & Retry Logic",
+          "priority": "HIGH",
+          "description": "Implement automated error recovery and production webhook signature verification for Greenspark impacts."
+        }
+      ]
+    },
+    "phase_4_admin_and_certificates": {
+      "status": "IN_PROGRESS",
+      "assignedTo": "Muse & Antigravity",
+      "completed": [
+        "Public verifiable Impact Certificate page (/impact/[orderId])",
+        "Custom zero-bloat Admin Portal (/admin) with 1-click product seeder and stock manager"
+      ],
+      "nextTasksForMuse": [
+        {
+          "id": "M-01",
+          "title": "Firestore RBAC Security Rules",
+          "priority": "CRITICAL",
+          "description": "Author firestore.rules and storage.rules to enforce Admin-only writes while preserving public product reads."
+        },
+        {
+          "id": "M-03",
+          "title": "Dynamic Impact Certificate Social Sharing Card (OG Images)",
+          "priority": "MEDIUM",
+          "description": "Build Next.js Dynamic OpenGraph image generator at /api/og/impact/[orderId] for Instagram and LinkedIn sharing."
+        },
+        {
+          "id": "M-04",
+          "title": "Quebec Bill 96 French Localization Support",
+          "priority": "MEDIUM",
+          "description": "Establish bilingual dictionary or next-intl localization pipeline for Canadian compliance."
+        }
+      ]
+    }
+  },
+  "compliance": {
+    "bill_C59_anti_greenwashing": "Strictly verified via Greenspark API third-party immutable audit hashes",
+    "health_canada_safe_harbor": "Pure mechanical action lifestyle goods; zero therapeutic or antiseptic claims",
+    "tax_nexus": "Stripe automatic tax calculation for Quebec GST/QST and Canadian provinces"
+  }
+}
