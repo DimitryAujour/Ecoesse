@@ -1,8 +1,12 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import { Sprout, Trees, Waves, ShieldCheck } from 'lucide-react';
+import { useLocale } from '@/context/LocaleContext';
 
 export const Footer: React.FC = () => {
+  const { dict } = useLocale();
   return (
     <footer className="mt-24 border-t border-emerald-950/80 bg-[#080e0b] text-slate-400 text-xs">
       {/* Environmental Trust Banner */}
@@ -13,8 +17,8 @@ export const Footer: React.FC = () => {
               <Trees className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="font-semibold text-slate-200 text-sm">Verified Tree Planting</h4>
-              <p className="text-[11px] text-slate-500">Every single order plants native trees via Greenspark.</p>
+              <h4 className="font-semibold text-slate-200 text-sm">{dict.footer.treeTitle}</h4>
+              <p className="text-[11px] text-slate-500">{dict.footer.treeText}</p>
             </div>
           </div>
 
@@ -23,8 +27,8 @@ export const Footer: React.FC = () => {
               <Waves className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="font-semibold text-slate-200 text-sm">Ocean Plastic Recovery</h4>
-              <p className="text-[11px] text-slate-500">Recovers ocean-bound plastic bottles before reaching waterways.</p>
+              <h4 className="font-semibold text-slate-200 text-sm">{dict.footer.oceanTitle}</h4>
+              <p className="text-[11px] text-slate-500">{dict.footer.oceanText}</p>
             </div>
           </div>
 
@@ -33,8 +37,8 @@ export const Footer: React.FC = () => {
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="font-semibold text-slate-200 text-sm">Canadian Owned & Operated</h4>
-              <p className="text-[11px] text-slate-500">All prices in CAD • Quebec GST/QST & Canadian taxes supported.</p>
+              <h4 className="font-semibold text-slate-200 text-sm">{dict.footer.canadianTitle}</h4>
+              <p className="text-[11px] text-slate-500">{dict.footer.canadianText}</p>
             </div>
           </div>
         </div>
@@ -46,17 +50,17 @@ export const Footer: React.FC = () => {
           <div className="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center text-white">
             <Sprout className="w-4 h-4" />
           </div>
-          <span className="font-bold text-white text-sm">Ecoesse Commerce Engine</span>
+          <span className="font-bold text-white text-sm">{dict.footer.engineName}</span>
           <span className="text-slate-600">|</span>
-          <span className="text-slate-500 text-[11px]">Next.js 15+ App Router • Firebase • Stripe</span>
+          <span className="text-slate-500 text-[11px]">{dict.footer.engineTech}</span>
         </div>
 
         <div className="flex items-center gap-6">
           <Link href="/admin" className="hover:text-emerald-400 transition-colors">
-            Admin Dashboard
+            {dict.footer.adminDashboard}
           </Link>
           <Link href="/impact/demo_order_123" className="hover:text-emerald-400 transition-colors">
-            Impact Verification
+            {dict.footer.impactVerification}
           </Link>
           <span className="text-slate-600">© {new Date().getFullYear()} Ecoesse Inc.</span>
         </div>
