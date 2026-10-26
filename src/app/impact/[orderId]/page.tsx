@@ -1,9 +1,49 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Trees, Waves, Wind, ShieldCheck, CheckCircle2, Share2, ArrowRight, ExternalLink } from 'lucide-react';
 
 interface ImpactPageProps {
   params: Promise<{ orderId: string }>;
+}
+
+// Task M-03: point social crawlers at the dynamic OG image for this
+// certificate. The image itself is verified-only (see
+// src/app/api/og/impact/[orderId]/route.tsx), so the metadata here
+// deliberately contains no totals and no verified claim — those are
+// decided server-side by the OG route from the real order record.
+// The page body below is unchanged in this PR and is still demo data;
+// fixing it to read the real order is a separate follow-up, and the OG
+// route intentionally does not copy it.
+export async function generateMetadata({ params }: ImpactPageProps): Promise<Metadata> {
+  const { orderId } = await params;
+  const base = (process.env.NEXT_PUBLIC_BASE_URL || '').replace(/\/$/, '');
+  const imageUrl = base
+    ? `${base}/api/og/impact/${orderId}`
+    : `/api/og/impact/${orderId}`;
+  return {
+    title: 'Ecoesse Impact Certificate',
+    description: 'An Ecoesse environmental impact certificate.',
+    openGraph: {
+      title: 'Ecoesse Impact Certificate',
+      description: 'An Ecoesse environmental impact certificate.',
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: 'Ecoesse impact certificate',
+        },
+      ],
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'Ecoesse Impact Certificate',
+      description: 'An Ecoesse environmental impact certificate.',
+      images: [imageUrl],
+    },
+  };
 }
 
 export default async function ImpactCertificatePage({ params }: ImpactPageProps) {
