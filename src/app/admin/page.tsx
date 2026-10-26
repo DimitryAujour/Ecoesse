@@ -29,15 +29,37 @@ export default function AdminPage() {
   const { dict, locale } = useLocale();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState<boolean>(true);
+  // Admin-claim gate (follow-up to M-01). Firestore rules already
+  // reject non-admin writes, but the old UI showed the admin controls
+  // to any signed-in user, so a non-admin would only discover the
+  // rejection by trying to seed. The UI now mirrors the rules: only a
+  // user whose ID token carries admin: true sees the controls.
+  // This is a UX gate only — the rules remain the security boundary,
+  // and a claim set server-side is only picked up after a token
+  // refresh, which is why getIdTokenResult is forced here.
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [products, setProducts] = useState<Product[]>(SAMPLE_PRODUCTS);
   const [isSeeding, setIsSeeding] = useState<boolean>(false);
   const [seedSuccess, setSeedSuccess] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'inventory' | 'orders' | 'settings'>('inventory');
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
-      setAuthLoading(false);
+      if (!user) {
+        setIsAdmin(false);
+        setAuthLoading(false);
+        return;
+      }
+      try {
+        const token = await user.getIdTokenResult(true);
+        setIsAdmin((token.claims as Record<string, unknown>).admin === true);
+      } catch (err) {
+        console.warn('Admin claim check failed, treating as non-admin:', err);
+        setIsAdmin(false);
+      } finally {
+        setAuthLoading(false);
+      }
     });
     return () => unsubscribe();
   }, []);
@@ -56,6 +78,7 @@ export default function AdminPage() {
 
   // 1-Click Seeder to Firestore
   const handleSeedProducts = async () => {
+    if (!isAdmin) return;
     setIsSeeding(true);
     setSeedSuccess(null);
 
@@ -77,6 +100,7 @@ export default function AdminPage() {
   };
 
   const handleUpdateStock = (productId: string, delta: number) => {
+    if (!isAdmin) return;
     setProducts((prev) =>
       prev.map((p) =>
         p.id === productId ? { ...p, inventoryCount: Math.max(0, p.inventoryCount + delta) } : p
@@ -138,6 +162,28 @@ export default function AdminPage() {
         </div>
       )}
 
+      {/* Admin-claim gate: signed-in non-admins see this notice, not
+          the controls below. Signed-out visitors see only the sign-in
+          button in the header. While the claim is being checked,
+          nothing below the header is rendered, so controls never flash
+          for a non-admin. */}
+      {currentUser && !authLoading && isAdmin === false && (
+        <div className="p-6 rounded-2xl eco-glass border border-amber-500/30 space-y-3">
+          <h2 className="text-base font-bold text-white flex items-center gap-2">
+            <Lock className="w-5 h-5 text-amber-400" /> {dict.admin.notAdminTitle}
+          </h2>
+          <p className="text-xs text-slate-400 leading-relaxed">{dict.admin.notAdminText}</p>
+          <p className="text-xs text-slate-500">
+            {currentUser.email}
+          </p>
+        </div>
+      )}
+      {currentUser && !authLoading && isAdmin === null && (
+        <p className="text-xs text-slate-400">{dict.admin.checking}</p>
+      )}
+
+      {isAdmin && (
+        <>
       {/* Admin Tabs */}
       <div className="flex gap-2 border-b border-white/5 pb-2">
         <button
@@ -324,6 +370,8 @@ export default function AdminPage() {
             </div>
           </div>
         </div>
+      )}
+      </>
       )}
     </div>
   );
