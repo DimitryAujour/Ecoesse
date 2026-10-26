@@ -5,6 +5,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Trees, Waves, Wind, ShieldCheck, ArrowLeft, Check, Sparkles } from 'lucide-react';
 import { ProductDetailClient } from './ProductDetailClient';
+import { getServerLocale } from '@/lib/i18n/server';
+import { getDictionary } from '@/lib/i18n/dictionary';
+import { localizedTitle, localizedDescription } from '@/lib/i18n/product';
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
@@ -13,6 +16,8 @@ interface ProductPageProps {
 export default async function ProductDetailPage({ params }: ProductPageProps) {
   const { slug } = await params;
   const product = SAMPLE_PRODUCTS.find((p) => p.slug === slug);
+  const locale = await getServerLocale();
+  const dict = getDictionary(locale);
 
   if (!product) {
     notFound();
@@ -28,7 +33,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
         href="/"
         className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-emerald-400 transition-colors mb-8"
       >
-        <ArrowLeft className="w-4 h-4" /> Back to Catalog
+        <ArrowLeft className="w-4 h-4" /> {dict.detail.back}
       </Link>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
@@ -38,7 +43,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             {product.images[0] ? (
               <Image
                 src={product.images[0]}
-                alt={product.title}
+                alt={localizedTitle(product, locale)}
                 fill
                 priority
                 sizes="(max-width: 1024px) 100vw, 50vw"
@@ -58,7 +63,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                   key={i}
                   className="relative aspect-square rounded-xl overflow-hidden border border-white/10 bg-black/40 cursor-pointer hover:border-emerald-500/60 transition-colors"
                 >
-                  <Image src={img} alt={`${product.title} ${i}`} fill className="object-cover" />
+                  <Image src={img} alt={`${localizedTitle(product, locale)} ${i}`} fill className="object-cover" />
                 </div>
               ))}
             </div>
@@ -76,7 +81,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             </div>
 
             <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
-              {product.title}
+              {localizedTitle(product, locale)}
             </h1>
 
             {/* Price Row */}
@@ -86,7 +91,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 <span className="text-base text-slate-500 line-through">${formattedCompare}</span>
               )}
               <span className="text-xs font-semibold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/40">
-                CAD • Canadian Tax & QC GST/QST at checkout
+                {dict.detail.taxNote}
               </span>
             </div>
 
@@ -94,9 +99,9 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             <div className="p-5 rounded-2xl bg-gradient-to-br from-emerald-950/60 to-teal-950/50 border border-emerald-500/30 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-emerald-300 uppercase tracking-wider flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400" /> Guaranteed Environmental Impact
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" /> {dict.detail.impactTitle}
                 </span>
-                <span className="text-[11px] text-emerald-400 font-medium">Greenspark Ledger</span>
+                <span className="text-[11px] text-emerald-400 font-medium">{dict.detail.ledger}</span>
               </div>
 
               <div className="grid grid-cols-3 gap-3 text-center">
@@ -105,7 +110,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                   <div className="text-xl font-bold text-emerald-300">
                     +{product.sustainabilityMetrics.treesPlanted}
                   </div>
-                  <div className="text-[10px] text-slate-400">Trees Planted</div>
+                  <div className="text-[10px] text-slate-400">{dict.detail.trees}</div>
                 </div>
 
                 <div className="p-3 rounded-xl bg-black/50 border border-cyan-500/20">
@@ -113,7 +118,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                   <div className="text-xl font-bold text-cyan-300">
                     +{product.sustainabilityMetrics.plasticBottlesSaved}
                   </div>
-                  <div className="text-[10px] text-slate-400">Bottles Saved</div>
+                  <div className="text-[10px] text-slate-400">{dict.detail.bottles}</div>
                 </div>
 
                 <div className="p-3 rounded-xl bg-black/50 border border-amber-500/20">
@@ -121,7 +126,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                   <div className="text-xl font-bold text-amber-300">
                     +{product.sustainabilityMetrics.carbonOffsetKg} kg
                   </div>
-                  <div className="text-[10px] text-slate-400">CO₂ Offset</div>
+                  <div className="text-[10px] text-slate-400">{dict.detail.carbon}</div>
                 </div>
               </div>
             </div>
@@ -132,10 +137,10 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             {/* Description & Specs */}
             <div className="pt-6 border-t border-white/10 space-y-4">
               <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-emerald-400" /> Specifications & Craft
+                <Sparkles className="w-4 h-4 text-emerald-400" /> {dict.detail.specs}
               </h3>
               <div className="text-xs sm:text-sm text-slate-300 leading-relaxed whitespace-pre-line space-y-2">
-                {product.description}
+                {localizedDescription(product, locale)}
               </div>
             </div>
           </div>
