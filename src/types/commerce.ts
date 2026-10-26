@@ -16,6 +16,12 @@ export interface Product {
   title: string;
   slug: string;
   description: string;
+  // Task M-04 follow-up: per-locale product copy. English title /
+  // description remain the canonical fields; the French fields are
+  // optional so older Firestore documents (seeded before this change)
+  // keep rendering in English until they are re-seeded.
+  titleFr?: string;
+  descriptionFr?: string;
   category: ProductCategory;
   price: number; // Stored in cents (e.g., 1999 = $19.99 CAD)
   compareAtPrice: number | null;
