@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Product } from '@/types/commerce';
 import { useCart } from '@/context/CartContext';
 import { useLocale } from '@/context/LocaleContext';
+import { localizedTitle, localizedDescription } from '@/lib/i18n/product';
 import { Trees, Waves, Plus, Check } from 'lucide-react';
 
 interface ProductCardProps {
@@ -14,7 +15,7 @@ interface ProductCardProps {
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addItem, items } = useCart();
-  const { dict } = useLocale();
+  const { dict, locale } = useLocale();
   const [justAdded, setJustAdded] = React.useState(false);
 
   const isInCart = items.some((i) => i.product.id === product.id);
@@ -36,7 +37,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {product.images[0] ? (
             <Image
               src={product.images[0]}
-              alt={product.title}
+              alt={localizedTitle(product, locale)}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
               className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
@@ -77,11 +78,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <div className="p-5 flex-1 flex flex-col justify-between">
         <div>
           <Link href={`/products/${product.slug}`} className="block group-hover:text-emerald-400 transition-colors">
-            <h3 className="font-semibold text-base text-slate-100 line-clamp-1">{product.title}</h3>
+            <h3 className="font-semibold text-base text-slate-100 line-clamp-1">{localizedTitle(product, locale)}</h3>
           </Link>
 
           <p className="text-xs text-slate-400 line-clamp-2 mt-1.5 leading-relaxed">
-            {product.description.replace(/###/g, '').replace(/\*\*/g, '').slice(0, 110)}...
+            {localizedDescription(product, locale).replace(/###/g, '').replace(/\*\*/g, '').slice(0, 110)}...
           </p>
         </div>
 
