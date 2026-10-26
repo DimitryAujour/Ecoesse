@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Product } from '@/types/commerce';
 import { useCart } from '@/context/CartContext';
+import { useLocale } from '@/context/LocaleContext';
 import { ShoppingBag, Check } from 'lucide-react';
 
 interface ProductDetailClientProps {
@@ -11,6 +12,7 @@ interface ProductDetailClientProps {
 
 export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({ product }) => {
   const { addItem } = useCart();
+  const { dict } = useLocale();
   const [quantity, setQuantity] = useState<number>(1);
   const [added, setAdded] = useState<boolean>(false);
 
@@ -53,19 +55,19 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({ produc
         >
           {added ? (
             <>
-              <Check className="w-5 h-5" /> Added to Impact Bag!
+              <Check className="w-5 h-5" /> {dict.detail.added}
             </>
           ) : (
             <>
-              <ShoppingBag className="w-5 h-5" /> Add to Impact Bag (${lineTotal} CAD)
+              <ShoppingBag className="w-5 h-5" /> {dict.detail.addToBag} (${lineTotal} CAD)
             </>
           )}
         </button>
       </div>
 
       <div className="flex items-center justify-between text-xs text-slate-400 px-1">
-        <span>Available Inventory: <strong>{product.inventoryCount} units</strong></span>
-        <span>Ships within 24-48 hours</span>
+        <span>{dict.detail.inventory} <strong>{product.inventoryCount} {dict.detail.units}</strong></span>
+        <span>{dict.detail.ships}</span>
       </div>
     </div>
   );
