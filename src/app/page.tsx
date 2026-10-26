@@ -3,11 +3,18 @@ import { SAMPLE_PRODUCTS, INITIAL_GLOBAL_IMPACT } from '@/lib/seed/products';
 import { ProductGrid } from '@/components/products/ProductGrid';
 import { Trees, Waves, Wind, ShieldCheck, ArrowRight, Sparkles, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
+import { getServerLocale } from '@/lib/i18n/server';
+import { getDictionary } from '@/lib/i18n/dictionary';
 
 export default async function HomePage() {
   // Products dataset (sample seed or Firestore)
   const products = SAMPLE_PRODUCTS;
   const stats = INITIAL_GLOBAL_IMPACT;
+  // Task M-04: homepage copy follows the resolved locale. Product
+  // titles/descriptions are data, not UI strings, and stay as stored.
+  const locale = await getServerLocale();
+  const dict = getDictionary(locale);
+  const numberLocale = locale === 'fr' ? 'fr-CA' : 'en-CA';
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-16">
@@ -19,19 +26,18 @@ export default async function HomePage() {
         <div className="relative max-w-2xl space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-950/80 border border-emerald-500/30 text-emerald-300 text-xs font-semibold">
             <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-            Zero-Waste Household • Personal Care • Pet Care
+            {dict.home.badge}
           </div>
 
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1]">
-            Every Order <br />
+            {dict.home.titleLine1} <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
-              Heals the Planet.
+              {dict.home.titleLine2}
             </span>
           </h1>
 
           <p className="text-sm sm:text-base text-slate-300/90 leading-relaxed max-w-xl">
-            Ecoesse eliminates microplastics and wasteful single-use packaging. Every single purchase
-            funds verifiable tree planting, ocean-bound plastic removal, and carbon offsetting via the Greenspark API.
+            {dict.home.heroText}
           </p>
 
           <div className="flex flex-wrap items-center gap-4 pt-2">
@@ -39,27 +45,27 @@ export default async function HomePage() {
               href="#catalog"
               className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-black font-bold text-sm shadow-lg shadow-emerald-950/60 flex items-center gap-2 transition-all"
             >
-              Shop Sustainable Essentials <ArrowRight className="w-4 h-4" />
+              {dict.home.shopCta} <ArrowRight className="w-4 h-4" />
             </a>
 
             <Link
               href="/impact/demo_order_123"
               className="px-5 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-semibold text-sm border border-white/10 flex items-center gap-2 transition-all"
             >
-              <ShieldCheck className="w-4 h-4 text-emerald-400" /> View Impact Ledger
+              <ShieldCheck className="w-4 h-4 text-emerald-400" /> {dict.home.viewLedger}
             </Link>
           </div>
 
           {/* Environmental Assurance Badges */}
           <div className="pt-4 flex items-center gap-6 text-xs text-slate-400 flex-wrap">
             <span className="flex items-center gap-1.5 text-slate-300">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" /> 100% Plastic-Free
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" /> {dict.home.badgePlasticFree}
             </span>
             <span className="flex items-center gap-1.5 text-slate-300">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Carbon-Neutral Shipping
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" /> {dict.home.badgeCarbonNeutral}
             </span>
             <span className="flex items-center gap-1.5 text-slate-300">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" /> CAD Currency & Quebec Tax
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" /> {dict.home.badgeCadQuebec}
             </span>
           </div>
         </div>
@@ -73,12 +79,12 @@ export default async function HomePage() {
           </div>
           <div>
             <div className="text-2xl sm:text-3xl font-extrabold text-white">
-              {stats.totalTreesPlanted.toLocaleString()}+
+              {stats.totalTreesPlanted.toLocaleString(numberLocale)}+
             </div>
             <div className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mt-0.5">
-              Trees Planted
+              {dict.home.statsTrees}
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">Native mangrove & forest restorations</p>
+            <p className="text-[11px] text-slate-400 mt-1">{dict.home.statsTreesText}</p>
           </div>
         </div>
 
@@ -88,12 +94,12 @@ export default async function HomePage() {
           </div>
           <div>
             <div className="text-2xl sm:text-3xl font-extrabold text-white">
-              {stats.totalPlasticBottlesRemoved.toLocaleString()}+
+              {stats.totalPlasticBottlesRemoved.toLocaleString(numberLocale)}+
             </div>
             <div className="text-xs font-semibold text-cyan-400 uppercase tracking-wider mt-0.5">
-              Bottles Rescued
+              {dict.home.statsBottles}
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">Ocean-bound plastic interception</p>
+            <p className="text-[11px] text-slate-400 mt-1">{dict.home.statsBottlesText}</p>
           </div>
         </div>
 
@@ -103,12 +109,12 @@ export default async function HomePage() {
           </div>
           <div>
             <div className="text-2xl sm:text-3xl font-extrabold text-white">
-              {stats.totalCarbonOffsetKg.toLocaleString()}+ kg
+              {stats.totalCarbonOffsetKg.toLocaleString(numberLocale)}+ kg
             </div>
             <div className="text-xs font-semibold text-amber-400 uppercase tracking-wider mt-0.5">
-              CO₂ Offset
+              {dict.home.statsCarbon}
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">Clean energy and biomass projects</p>
+            <p className="text-[11px] text-slate-400 mt-1">{dict.home.statsCarbonText}</p>
           </div>
         </div>
 
@@ -118,12 +124,12 @@ export default async function HomePage() {
           </div>
           <div>
             <div className="text-2xl sm:text-3xl font-extrabold text-white">
-              {stats.totalOrdersCount.toLocaleString()}+
+              {stats.totalOrdersCount.toLocaleString(numberLocale)}+
             </div>
             <div className="text-xs font-semibold text-purple-400 uppercase tracking-wider mt-0.5">
-              Orders Completed
+              {dict.home.statsOrders}
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">Verified on Greenspark public ledger</p>
+            <p className="text-[11px] text-slate-400 mt-1">{dict.home.statsOrdersText}</p>
           </div>
         </div>
       </section>
@@ -137,13 +143,13 @@ export default async function HomePage() {
       <section className="p-8 sm:p-12 rounded-3xl eco-glass border border-white/10 space-y-8">
         <div className="text-center max-w-xl mx-auto space-y-2">
           <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">
-            Engineered for Transparency
+            {dict.home.valueEyebrow}
           </span>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
-            Better Than Standard E-Commerce
+            {dict.home.valueTitle}
           </h2>
           <p className="text-xs sm:text-sm text-slate-400">
-            No expensive third-party apps, no monthly overhead, and 100% verified sustainability.
+            {dict.home.valueText}
           </p>
         </div>
 
@@ -152,9 +158,9 @@ export default async function HomePage() {
             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">
               01
             </div>
-            <h3 className="text-base font-bold text-white">Live Cart Impact Calculation</h3>
+            <h3 className="text-base font-bold text-white">{dict.home.valueCard1Title}</h3>
             <p className="text-xs text-slate-400 leading-relaxed">
-              As you adjust items in your drawer, your exact ecological dividend is computed dynamically in real-time.
+              {dict.home.valueCard1Text}
             </p>
           </div>
 
@@ -162,9 +168,9 @@ export default async function HomePage() {
             <div className="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center font-bold">
               02
             </div>
-            <h3 className="text-base font-bold text-white">Verifiable Impact Certificate</h3>
+            <h3 className="text-base font-bold text-white">{dict.home.valueCard2Title}</h3>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Every completed order receives a shareable certificate page linked to the Greenspark blockchain ledger.
+              {dict.home.valueCard2Text}
             </p>
           </div>
 
@@ -172,9 +178,9 @@ export default async function HomePage() {
             <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold">
               03
             </div>
-            <h3 className="text-base font-bold text-white">Zero Monthly Overhead Admin</h3>
+            <h3 className="text-base font-bold text-white">{dict.home.valueCard3Title}</h3>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Custom Next.js App Router & Firestore backend without $299/mo Shopify plan or app subscription fees.
+              {dict.home.valueCard3Text}
             </p>
           </div>
         </div>

@@ -3,10 +3,13 @@
 import React from 'react';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
+import { useLocale } from '@/context/LocaleContext';
+import { LocaleSwitcher } from './LocaleSwitcher';
 import { ShoppingBag, Sprout, Trees, Waves, Shield, User } from 'lucide-react';
 
 export const Header: React.FC = () => {
   const { totals, setIsCartOpen } = useCart();
+  const { dict } = useLocale();
 
   return (
     <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-[#09110d]/85 border-b border-emerald-950/60">
@@ -15,16 +18,16 @@ export const Header: React.FC = () => {
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-4 sm:gap-6 flex-wrap">
           <span className="flex items-center gap-1.5">
             <Trees className="w-3.5 h-3.5 text-emerald-400" />
-            <strong>1,420+</strong> Trees Planted
+            <strong>1,420+</strong> {dict.header.tickerTrees}
           </span>
           <span className="hidden sm:inline text-emerald-700">•</span>
           <span className="flex items-center gap-1.5">
             <Waves className="w-3.5 h-3.5 text-cyan-400" />
-            <strong>18,450+</strong> Ocean Bottles Removed
+            <strong>18,450+</strong> {dict.header.tickerBottles}
           </span>
           <span className="hidden md:inline text-emerald-700">•</span>
           <span className="hidden md:flex items-center gap-1.5 text-emerald-300/80">
-            🍁 100% Carbon-Neutral Shipping across Canada
+            🍁 {dict.header.tickerShipping}
           </span>
         </div>
       </div>
@@ -44,7 +47,7 @@ export const Header: React.FC = () => {
               </span>
             </div>
             <p className="text-[10px] text-emerald-300/70 -mt-0.5 tracking-wider uppercase font-semibold">
-              Sustainable Living
+              {dict.site.tagline}
             </p>
           </div>
         </Link>
@@ -52,34 +55,35 @@ export const Header: React.FC = () => {
         {/* Categories / Links */}
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-300">
           <Link href="/" className="hover:text-emerald-400 transition-colors">
-            All Products
+            {dict.header.allProducts}
           </Link>
           <Link href="/?category=household" className="hover:text-emerald-400 transition-colors">
-            Household
+            {dict.header.household}
           </Link>
           <Link href="/?category=personal-care" className="hover:text-emerald-400 transition-colors">
-            Personal Care
+            {dict.header.personalCare}
           </Link>
           <Link href="/?category=pet-care" className="hover:text-emerald-400 transition-colors">
-            Pet Care
+            {dict.header.petCare}
           </Link>
           <Link
             href="/impact/demo_order_123"
             className="flex items-center gap-1 text-emerald-400 hover:text-emerald-300 transition-colors"
           >
-            <Shield className="w-3.5 h-3.5" /> Impact Certificate
+            <Shield className="w-3.5 h-3.5" /> {dict.header.impactCertificate}
           </Link>
         </nav>
 
         {/* Right Actions: Admin & Cart */}
         <div className="flex items-center gap-3">
+          <LocaleSwitcher />
           <Link
             href="/admin"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-medium text-slate-300 border border-white/10 transition-colors"
             title="Custom Zero-Bloat Admin"
           >
             <User className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="hidden sm:inline">Admin</span>
+            <span className="hidden sm:inline">{dict.header.admin}</span>
           </Link>
 
           <button
@@ -87,7 +91,7 @@ export const Header: React.FC = () => {
             className="relative flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-600/90 hover:bg-emerald-500 text-white font-medium text-xs transition-all shadow-md shadow-emerald-950/40"
           >
             <ShoppingBag className="w-4 h-4" />
-            <span className="hidden sm:inline">Cart</span>
+            <span className="hidden sm:inline">{dict.header.cart}</span>
             {totals.itemCount > 0 && (
               <span className="w-5 h-5 rounded-full bg-white text-emerald-950 text-[11px] font-extrabold flex items-center justify-center -ml-0.5">
                 {totals.itemCount}

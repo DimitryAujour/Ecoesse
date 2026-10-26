@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "i18n:check": "node scripts/i18n-check.mjs"
   },
   "dependencies": {
     "autoprefixer": "^10.6.1",

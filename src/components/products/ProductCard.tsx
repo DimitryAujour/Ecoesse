@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Product } from '@/types/commerce';
 import { useCart } from '@/context/CartContext';
+import { useLocale } from '@/context/LocaleContext';
 import { Trees, Waves, Plus, Check } from 'lucide-react';
 
 interface ProductCardProps {
@@ -13,6 +14,7 @@ interface ProductCardProps {
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addItem, items } = useCart();
+  const { dict } = useLocale();
   const [justAdded, setJustAdded] = React.useState(false);
 
   const isInCart = items.some((i) => i.product.id === product.id);
@@ -53,7 +55,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </span>
           {formattedCompare && (
             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500 text-black">
-              Save ${(Number(formattedCompare) - Number(formattedPrice)).toFixed(2)}
+              {dict.product.save} ${(Number(formattedCompare) - Number(formattedPrice)).toFixed(2)}
             </span>
           )}
         </div>
@@ -62,11 +64,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="absolute bottom-3 left-3 right-3 flex items-center gap-1.5 pointer-events-none">
           <div className="px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-md border border-emerald-500/30 text-[11px] font-medium text-emerald-300 flex items-center gap-1">
             <Trees className="w-3.5 h-3.5 text-emerald-400" />
-            <span>+{product.sustainabilityMetrics.treesPlanted} Tree</span>
+            <span>+{product.sustainabilityMetrics.treesPlanted} {dict.product.tree}</span>
           </div>
           <div className="px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-md border border-cyan-500/30 text-[11px] font-medium text-cyan-300 flex items-center gap-1">
             <Waves className="w-3.5 h-3.5 text-cyan-400" />
-            <span>+{product.sustainabilityMetrics.plasticBottlesSaved} Bottles</span>
+            <span>+{product.sustainabilityMetrics.plasticBottlesSaved} {dict.product.bottles}</span>
           </div>
         </div>
       </div>
@@ -93,7 +95,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               )}
               <span className="text-[10px] text-slate-400">CAD</span>
             </div>
-            <span className="text-[10px] text-emerald-400/90 font-medium">In Stock ({product.inventoryCount})</span>
+            <span className="text-[10px] text-emerald-400/90 font-medium">{dict.product.inStock} ({product.inventoryCount})</span>
           </div>
 
           <button
@@ -106,11 +108,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           >
             {justAdded ? (
               <>
-                <Check className="w-3.5 h-3.5" /> Added!
+                <Check className="w-3.5 h-3.5" /> {dict.product.added}
               </>
             ) : (
               <>
-                <Plus className="w-3.5 h-3.5" /> Add to Bag
+                <Plus className="w-3.5 h-3.5" /> {dict.product.addToBag}
               </>
             )}
           </button>

@@ -2,11 +2,13 @@
 
 import React, { useState } from 'react';
 import { useCart } from '@/context/CartContext';
+import { useLocale } from '@/context/LocaleContext';
 import { X, Trash2, Trees, Waves, Wind, ShieldCheck, ShoppingBag, ArrowRight, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 
 export const CartDrawer: React.FC = () => {
   const { items, removeItem, updateQuantity, isCartOpen, setIsCartOpen, totals } = useCart();
+  const { dict } = useLocale();
   const [isCheckingOut, setIsCheckingOut] = useState<boolean>(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
@@ -36,10 +38,10 @@ export const CartDrawer: React.FC = () => {
         // Stripe keys are in test/mock mode
         window.location.href = `/impact/${data.orderId || 'demo_order_123'}`;
       } else {
-        throw new Error(data.error || 'Failed to initiate checkout.');
+        throw new Error(data.error || dict.cart.checkoutFailed);
       }
     } catch (err: any) {
-      setCheckoutError(err.message || 'Error redirecting to Stripe checkout.');
+      setCheckoutError(err.message || dict.cart.checkoutRedirectFailed);
       setIsCheckingOut(false);
     }
   };
@@ -58,7 +60,7 @@ export const CartDrawer: React.FC = () => {
         <div className="p-5 border-b border-white/10 flex items-center justify-between bg-black/20">
           <div className="flex items-center gap-2">
             <ShoppingBag className="w-5 h-5 text-emerald-400" />
-            <h2 className="text-lg font-bold">Your Impact Cart ({totals.itemCount})</h2>
+            <h2 className="text-lg font-bold">{dict.cart.title} ({totals.itemCount})</h2>
           </div>
           <button
             onClick={() => setIsCartOpen(false)}
@@ -73,10 +75,10 @@ export const CartDrawer: React.FC = () => {
           <div className="m-4 p-4 rounded-xl bg-gradient-to-br from-emerald-950/60 to-teal-950/60 border border-emerald-500/30 shadow-lg">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-semibold uppercase tracking-wider text-emerald-300 flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" /> Real-World Impact
+                <ShieldCheck className="w-4 h-4 text-emerald-400" /> {dict.cart.realImpact}
               </span>
               <span className="text-[11px] text-emerald-400/80 bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-700/50">
-                Greenspark Verified
+                {dict.cart.greensparkVerified}
               </span>
             </div>
 
@@ -84,19 +86,19 @@ export const CartDrawer: React.FC = () => {
               <div className="p-2 rounded-lg bg-black/40 border border-emerald-500/20">
                 <Trees className="w-4 h-4 text-emerald-400 mx-auto mb-1" />
                 <div className="text-lg font-extrabold text-emerald-300">+{totals.totalTrees}</div>
-                <div className="text-[10px] text-slate-400 font-medium leading-tight">Trees Planted</div>
+                <div className="text-[10px] text-slate-400 font-medium leading-tight">{dict.cart.trees}</div>
               </div>
 
               <div className="p-2 rounded-lg bg-black/40 border border-cyan-500/20">
                 <Waves className="w-4 h-4 text-cyan-400 mx-auto mb-1" />
                 <div className="text-lg font-extrabold text-cyan-300">+{totals.totalPlasticBottles}</div>
-                <div className="text-[10px] text-slate-400 font-medium leading-tight">Bottles Saved</div>
+                <div className="text-[10px] text-slate-400 font-medium leading-tight">{dict.cart.bottles}</div>
               </div>
 
               <div className="p-2 rounded-lg bg-black/40 border border-amber-500/20">
                 <Wind className="w-4 h-4 text-amber-400 mx-auto mb-1" />
                 <div className="text-lg font-extrabold text-amber-300">+{totals.totalCarbonKg} kg</div>
-                <div className="text-[10px] text-slate-400 font-medium leading-tight">CO₂ Offset</div>
+                <div className="text-[10px] text-slate-400 font-medium leading-tight">{dict.cart.carbon}</div>
               </div>
             </div>
           </div>
@@ -109,15 +111,15 @@ export const CartDrawer: React.FC = () => {
               <div className="w-16 h-16 rounded-full bg-emerald-950/40 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-4">
                 <ShoppingBag className="w-8 h-8" />
               </div>
-              <p className="text-base font-semibold text-slate-300">Your bag is empty</p>
+              <p className="text-base font-semibold text-slate-300">{dict.cart.emptyTitle}</p>
               <p className="text-xs text-slate-500 max-w-xs mt-1">
-                Explore our sustainable household and personal care essentials to make an impact.
+                {dict.cart.emptyText}
               </p>
               <button
                 onClick={() => setIsCartOpen(false)}
                 className="mt-6 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs transition-colors"
               >
-                Browse Catalog
+                {dict.cart.browseCatalog}
               </button>
             </div>
           ) : (
@@ -144,7 +146,7 @@ export const CartDrawer: React.FC = () => {
 
                   <div className="flex-1 min-w-0">
                     <h4 className="text-sm font-semibold text-slate-200 truncate">{item.product.title}</h4>
-                    <p className="text-xs text-slate-400 mt-0.5">${unitPrice} CAD each</p>
+                    <p className="text-xs text-slate-400 mt-0.5">${unitPrice} {dict.cart.each}</p>
 
                     <div className="flex items-center gap-3 mt-2.5">
                       <div className="flex items-center border border-white/10 rounded-lg bg-black/40">
@@ -166,7 +168,7 @@ export const CartDrawer: React.FC = () => {
                       <button
                         onClick={() => removeItem(item.product.id)}
                         className="text-slate-500 hover:text-rose-400 transition-colors p-1"
-                        title="Remove item"
+                        title={dict.cart.removeItem}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -194,15 +196,15 @@ export const CartDrawer: React.FC = () => {
 
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs text-slate-400">
-                <span>Subtotal</span>
+                <span>{dict.cart.subtotal}</span>
                 <span>${(totals.totalAmountCents / 100).toFixed(2)} CAD</span>
               </div>
               <div className="flex justify-between text-xs text-slate-400">
-                <span>Shipping & Canadian Tax</span>
-                <span>Calculated at checkout</span>
+                <span>{dict.cart.shippingTax}</span>
+                <span>{dict.cart.shippingTaxValue}</span>
               </div>
               <div className="flex justify-between text-base font-bold text-white pt-2 border-t border-white/10">
-                <span>Total (Estimated)</span>
+                <span>{dict.cart.totalEstimated}</span>
                 <span className="text-emerald-400">${(totals.totalAmountCents / 100).toFixed(2)} CAD</span>
               </div>
             </div>
@@ -214,17 +216,17 @@ export const CartDrawer: React.FC = () => {
             >
               {isCheckingOut ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" /> Preparing Secure Checkout...
+                  <Loader2 className="w-4 h-4 animate-spin" /> {dict.cart.preparingCheckout}
                 </>
               ) : (
                 <>
-                  Proceed to Impact Checkout <ArrowRight className="w-4 h-4" />
+                  {dict.cart.proceedCheckout} <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>
 
             <p className="text-[11px] text-center text-slate-500">
-              🔒 Powered by Stripe • Quebec GST/QST & Canadian taxes supported
+              🔒 {dict.cart.stripeNote}
             </p>
           </div>
         )}
