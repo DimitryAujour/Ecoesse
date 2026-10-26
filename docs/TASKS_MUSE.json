@@ -40,27 +40,16 @@
       "nextTasksForMuse": []
     },
     "phase_4_admin_and_certificates": {
-      "status": "IN_PROGRESS",
+      "status": "COMPLETED",
       "assignedTo": "Muse & Antigravity",
       "completed": [
         "Public verifiable Impact Certificate page (/impact/[orderId])",
         "Custom zero-bloat Admin Portal (/admin) with 1-click product seeder and stock manager",
-        "Firestore and Storage RBAC Security Rules (firestore.rules & storage.rules) (Task M-01)"
+        "Firestore and Storage RBAC Security Rules (firestore.rules & storage.rules) (Task M-01)",
+        "Dynamic Impact Certificate Social Sharing Card (OG Images at /api/og/impact/[orderId]) (Task M-03)",
+        "Quebec Bill 96 French Localization Support with dictionary & i18n:check (Task M-04)"
       ],
-      "nextTasksForMuse": [
-        {
-          "id": "M-03",
-          "title": "Dynamic Impact Certificate Social Sharing Card (OG Images)",
-          "priority": "MEDIUM",
-          "description": "Build Next.js Dynamic OpenGraph image generator at /api/og/impact/[orderId] for Instagram and LinkedIn sharing."
-        },
-        {
-          "id": "M-04",
-          "title": "Quebec Bill 96 French Localization Support",
-          "priority": "MEDIUM",
-          "description": "Establish bilingual dictionary or next-intl localization pipeline for Canadian compliance."
-        }
-      ]
+      "nextTasksForMuse": []
     }
   },
   "compliance": {
