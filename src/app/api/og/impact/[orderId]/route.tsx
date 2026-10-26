@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { adminDb } from '@/lib/firebase/admin';
+import { getDictionary, isLocale } from '@/lib/i18n/dictionary';
 import { getImpactCardData } from '@/lib/og/impact-card';
 
 // Dynamic Impact Certificate Social Sharing Card — Task M-03.
@@ -24,10 +25,16 @@ import { getImpactCardData } from '@/lib/og/impact-card';
 // so a crawler always receives a usable image.
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ orderId: string }> }
 ) {
   const { orderId } = await params;
+  // Crawlers fetch OG images without cookies, so the locale arrives as
+  // a query parameter (set by the impact page's metadata, see
+  // src/app/impact/[orderId]/page.tsx). Default to English otherwise.
+  const requestedLocale = new URL(req.url).searchParams.get('locale');
+  const locale = isLocale(requestedLocale) ? requestedLocale : 'en';
+  const og = getDictionary(locale).og;
 
   let card = getImpactCardData(null);
   try {
@@ -89,7 +96,7 @@ export async function GET(
                 fontWeight: 700,
               }}
             >
-              ✓ Verified via Greenspark
+              ✓ {og.verifiedBadge}
             </div>
           )}
         </div>
@@ -97,17 +104,17 @@ export async function GET(
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div style={{ fontSize: '56px', fontWeight: 800, lineHeight: 1.05 }}>
             {verified
-              ? 'Environmental Dividend Verified'
+              ? og.verifiedTitle
               : pending
-                ? 'Impact Certificate'
-                : 'Ecoesse Impact Certificate'}
+                ? og.pendingTitle
+                : og.genericTitle}
           </div>
           <div style={{ fontSize: '26px', color: '#94a3b8', lineHeight: 1.4 }}>
             {verified
-              ? 'This order funded real, verifiable ecological action.'
+              ? og.verifiedText
               : pending
-                ? 'This order’s environmental impact is being verified. Totals are not shown until Greenspark confirms them.'
-                : 'Sustainable essentials with verifiable impact.'}
+                ? og.pendingText
+                : og.genericText}
           </div>
         </div>
 
@@ -128,7 +135,7 @@ export async function GET(
               <div style={{ fontSize: '44px', fontWeight: 800, color: '#6ee7b7' }}>
                 +{card.trees}
               </div>
-              <div style={{ fontSize: '20px', color: '#cbd5e1' }}>Trees Planted</div>
+              <div style={{ fontSize: '20px', color: '#cbd5e1' }}>{og.trees}</div>
             </div>
             <div
               style={{
@@ -145,7 +152,7 @@ export async function GET(
               <div style={{ fontSize: '44px', fontWeight: 800, color: '#67e8f9' }}>
                 +{card.bottles}
               </div>
-              <div style={{ fontSize: '20px', color: '#cbd5e1' }}>Bottles Saved</div>
+              <div style={{ fontSize: '20px', color: '#cbd5e1' }}>{og.bottles}</div>
             </div>
             <div
               style={{
@@ -162,12 +169,12 @@ export async function GET(
               <div style={{ fontSize: '44px', fontWeight: 800, color: '#fcd34d' }}>
                 +{card.carbonKg.toFixed(1)} kg
               </div>
-              <div style={{ fontSize: '20px', color: '#cbd5e1' }}>CO₂ Offset</div>
+              <div style={{ fontSize: '20px', color: '#cbd5e1' }}>{og.carbon}</div>
             </div>
           </div>
         ) : (
           <div style={{ fontSize: '22px', color: '#64748b' }}>
-            Thank you for choosing zero-waste with Ecoesse.
+            {og.thanks}
           </div>
         )}
 
@@ -179,7 +186,7 @@ export async function GET(
               wordBreak: 'break-all',
             }}
           >
-            Greenspark ID: {card.transactionId}
+            {og.greensparkId} {card.transactionId}
           </div>
         )}
       </div>
