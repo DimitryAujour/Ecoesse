@@ -3,12 +3,13 @@
 import React, { useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useLocale } from '@/context/LocaleContext';
+import { localizedTitle } from '@/lib/i18n/product';
 import { X, Trash2, Trees, Waves, Wind, ShieldCheck, ShoppingBag, ArrowRight, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 
 export const CartDrawer: React.FC = () => {
   const { items, removeItem, updateQuantity, isCartOpen, setIsCartOpen, totals } = useCart();
-  const { dict } = useLocale();
+  const { dict, locale } = useLocale();
   const [isCheckingOut, setIsCheckingOut] = useState<boolean>(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
@@ -133,7 +134,7 @@ export const CartDrawer: React.FC = () => {
                     {item.product.images[0] ? (
                       <Image
                         src={item.product.images[0]}
-                        alt={item.product.title}
+                        alt={localizedTitle(item.product, locale)}
                         fill
                         className="object-cover"
                       />
@@ -145,7 +146,7 @@ export const CartDrawer: React.FC = () => {
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-semibold text-slate-200 truncate">{item.product.title}</h4>
+                    <h4 className="text-sm font-semibold text-slate-200 truncate">{localizedTitle(item.product, locale)}</h4>
                     <p className="text-xs text-slate-400 mt-0.5">${unitPrice} {dict.cart.each}</p>
 
                     <div className="flex items-center gap-3 mt-2.5">
