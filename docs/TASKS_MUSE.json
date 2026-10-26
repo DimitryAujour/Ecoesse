@@ -29,21 +29,15 @@
       ]
     },
     "phase_3_stripe_and_greenspark": {
-      "status": "IN_PROGRESS",
+      "status": "COMPLETED",
       "assignedTo": "Antigravity & Muse",
       "completed": [
         "Stripe Checkout route (/api/checkout) with automatic CAD tax and line items",
         "Stripe Webhook handler (/api/webhooks/stripe) for checkout.session.completed",
-        "Greenspark API client (src/lib/greenspark/client.ts) with verifiable ledger generation"
+        "Greenspark API client (src/lib/greenspark/client.ts) with verifiable ledger generation",
+        "Production Greenspark Webhook & Retry Logic with exponential backoff and HMAC signature verification (Task M-02)"
       ],
-      "nextTasksForMuse": [
-        {
-          "id": "M-02",
-          "title": "Production Greenspark Webhook & Retry Logic",
-          "priority": "HIGH",
-          "description": "Implement automated error recovery and production webhook signature verification for Greenspark impacts."
-        }
-      ]
+      "nextTasksForMuse": []
     },
     "phase_4_admin_and_certificates": {
       "status": "IN_PROGRESS",

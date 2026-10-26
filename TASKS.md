@@ -28,7 +28,7 @@ Project Vision: Zero-monthly-overhead headless e-commerce platform for Ecoesse w
 - [x] `/api/checkout` route to validate Firestore inventory, calculate line items in CAD cents, and initiate Stripe Checkout Session (`src/app/api/checkout/route.ts`)
 - [x] `/api/webhooks/stripe` to handle `checkout.session.completed`, decrement inventory, log order in Firestore, trigger Greenspark API, and increment `site_stats/global_impact` (`src/app/api/webhooks/stripe/route.ts`)
 - [x] Greenspark service helper (`src/lib/greenspark/client.ts`) for verifiable environmental impact recording
-- [ ] [TODO - Muse] Production Greenspark Webhook & Retry Logic (Task M-02)
+- [x] Production Greenspark Webhook & Retry Logic (Task M-02 - Completed by Muse & Merged)
 
 ## Phase 4: Admin Portal & Customer Impact Certificates (Assigned: Muse / Antigravity)
 - [x] `/impact/[orderId]` public verifiable Impact Certificate page with shareable badge and Greenspark transaction record (`src/app/impact/[orderId]/page.tsx`)
