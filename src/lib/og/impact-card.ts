@@ -1,14 +1,14 @@
-// Impact share-card data — Task M-03, verified-only.
+// Impact certificate data — Task M-03 (OG image), shared since the
+// impact-page wiring with src/app/impact/[orderId]/page.tsx.
 //
-// This is the single place that decides what an OG image may claim.
-// It is deliberately conservative, for Bill C-59:
+// This is the single place that decides what a certificate may claim,
+// on the page or in the share card. It is deliberately conservative,
+// for Bill C-59:
 //
 // - "verified" only when the order's impactRecord (written by the Stripe
 //   webhook after M-02) has greensparkStatus === 'verified' AND a
 //   non-empty greensparkTransactionId. Totals shown are exactly the
-//   totals stored on that verified record — never demo data, and never
-//   the totals from the impact page, which is still a demo page with
-//   hardcoded +2 trees / +28 bottles / +5.0 kg and a fabricated id.
+//   totals stored on that verified record — never demo data.
 // - Orders created before M-02, which have a transaction id but no
 //   greensparkStatus, are treated as "pending". That is intentional:
 //   their verification status cannot be proven from the record alone.
@@ -31,11 +31,40 @@ export interface ImpactCardData {
   bottles: number;
   carbonKg: number;
   transactionId: string | null;
+  certificateUrl: string | null;
+  verifiedAtISO: string | null;
 }
 
 function toNumber(value: unknown): number {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+}
+
+/** Normalize a verifiedAt value (ISO string, Firestore Timestamp, or
+ *  { seconds } object) to an ISO string, or null if unusable. */
+function toISODate(value: unknown): string | null {
+  if (typeof value === 'string') {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date.toISOString();
+  }
+  if (value && typeof value === 'object') {
+    const obj = value as Record<string, unknown>;
+    if (typeof obj.toDate === 'function') {
+      try {
+        const date = (obj.toDate as () => Date)();
+        return date instanceof Date && !Number.isNaN(date.getTime())
+          ? date.toISOString()
+          : null;
+      } catch {
+        return null;
+      }
+    }
+    if (typeof obj.seconds === 'number') {
+      const date = new Date(obj.seconds * 1000);
+      return Number.isNaN(date.getTime()) ? null : date.toISOString();
+    }
+  }
+  return null;
 }
 
 export function getImpactCardData(order: unknown): ImpactCardData {
@@ -45,6 +74,8 @@ export function getImpactCardData(order: unknown): ImpactCardData {
     bottles: 0,
     carbonKg: 0,
     transactionId: null,
+    certificateUrl: null,
+    verifiedAtISO: null,
   };
 
   if (!order || typeof order !== 'object') {
@@ -69,6 +100,12 @@ export function getImpactCardData(order: unknown): ImpactCardData {
       bottles: toNumber(impact.plasticSaved),
       carbonKg: toNumber(impact.carbonOffset),
       transactionId,
+      certificateUrl:
+        typeof impact.greensparkCertificateUrl === 'string' &&
+        impact.greensparkCertificateUrl.trim().length > 0
+          ? impact.greensparkCertificateUrl
+          : null,
+      verifiedAtISO: toISODate(impact.verifiedAt),
     };
   }
 
