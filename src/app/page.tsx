@@ -1,14 +1,56 @@
 import React from 'react';
-import { SAMPLE_PRODUCTS, INITIAL_GLOBAL_IMPACT } from '@/lib/seed/products';
+import { SAMPLE_PRODUCTS } from '@/lib/seed/products';
 import { ProductGrid } from '@/components/products/ProductGrid';
 import { Trees, Waves, Wind, ShieldCheck, ArrowRight, Sparkles, CheckCircle2 } from 'lucide-react';
 import { getServerLocale } from '@/lib/i18n/server';
 import { getDictionary } from '@/lib/i18n/dictionary';
+import { adminDb } from '@/lib/firebase/admin';
 
 export default async function HomePage() {
   // Products dataset (sample seed or Firestore)
   const products = SAMPLE_PRODUCTS;
-  const stats = INITIAL_GLOBAL_IMPACT;
+  // Global impact stats, wired to real data (same change as the header
+  // ticker). The old section rendered INITIAL_GLOBAL_IMPACT — the seed
+  // values 1,420 trees / 18,450 bottles / 3,680 kg / 685 orders —
+  // directly in code, so it showed those numbers even if the store
+  // had never sold anything. It now reads site_stats/global_impact
+  // with the Admin SDK (the same document the Stripe webhook
+  // increments for verified orders). If the document does not exist
+  // or cannot be read, the whole stats section is omitted rather
+  // than showing hardcoded figures. Same honest limit as the ticker:
+  // the document's baseline is still the seed values until the
+  // seeder's baseline is replaced with audited totals.
+  let stats: {
+    totalTreesPlanted: number;
+    totalPlasticBottlesRemoved: number;
+    totalCarbonOffsetKg: number;
+    totalOrdersCount: number;
+  } | null = null;
+  try {
+    const snap = await adminDb.collection('site_stats').doc('global_impact').get();
+    if (snap.exists) {
+      const data = snap.data()!;
+      const toNumber = (v: unknown): number | null => {
+        const n = Number(v);
+        return Number.isFinite(n) && n >= 0 ? n : null;
+      };
+      const trees = toNumber(data.totalTreesPlanted);
+      const bottles = toNumber(data.totalPlasticBottlesRemoved);
+      const carbon = toNumber(data.totalCarbonOffsetKg);
+      const orders = toNumber(data.totalOrdersCount);
+      if (trees !== null && bottles !== null && carbon !== null && orders !== null) {
+        stats = {
+          totalTreesPlanted: trees,
+          totalPlasticBottlesRemoved: bottles,
+          totalCarbonOffsetKg: carbon,
+          totalOrdersCount: orders,
+        };
+      }
+    }
+  } catch (err) {
+    console.error('Homepage: failed to load site_stats, omitting stats section:', err);
+    stats = null;
+  }
   // Task M-04: homepage copy follows the resolved locale. Product
   // titles/descriptions are data, not UI strings, and stay as stored.
   const locale = await getServerLocale();
@@ -68,7 +110,9 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Global Impact Ledger Live Stats */}
+      {/* Global Impact Ledger Live Stats — only when a real stats
+          document exists (see above); never hardcoded numbers. */}
+      {stats && (
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <div className="p-6 rounded-2xl eco-glass border border-emerald-900/60 flex flex-col justify-between">
           <div className="w-10 h-10 rounded-xl bg-emerald-950/80 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-4">
@@ -76,7 +120,7 @@ export default async function HomePage() {
           </div>
           <div>
             <div className="text-2xl sm:text-3xl font-extrabold text-white">
-              {stats.totalTreesPlanted.toLocaleString(numberLocale)}+
+              {stats.totalTreesPlanted.toLocaleString(numberLocale)}
             </div>
             <div className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mt-0.5">
               {dict.home.statsTrees}
@@ -91,7 +135,7 @@ export default async function HomePage() {
           </div>
           <div>
             <div className="text-2xl sm:text-3xl font-extrabold text-white">
-              {stats.totalPlasticBottlesRemoved.toLocaleString(numberLocale)}+
+              {stats.totalPlasticBottlesRemoved.toLocaleString(numberLocale)}
             </div>
             <div className="text-xs font-semibold text-cyan-400 uppercase tracking-wider mt-0.5">
               {dict.home.statsBottles}
@@ -106,7 +150,7 @@ export default async function HomePage() {
           </div>
           <div>
             <div className="text-2xl sm:text-3xl font-extrabold text-white">
-              {stats.totalCarbonOffsetKg.toLocaleString(numberLocale)}+ kg
+              {stats.totalCarbonOffsetKg.toLocaleString(numberLocale)} kg
             </div>
             <div className="text-xs font-semibold text-amber-400 uppercase tracking-wider mt-0.5">
               {dict.home.statsCarbon}
@@ -121,7 +165,7 @@ export default async function HomePage() {
           </div>
           <div>
             <div className="text-2xl sm:text-3xl font-extrabold text-white">
-              {stats.totalOrdersCount.toLocaleString(numberLocale)}+
+              {stats.totalOrdersCount.toLocaleString(numberLocale)}
             </div>
             <div className="text-xs font-semibold text-purple-400 uppercase tracking-wider mt-0.5">
               {dict.home.statsOrders}
@@ -130,6 +174,7 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Catalog Grid Section */}
       <div id="catalog">
