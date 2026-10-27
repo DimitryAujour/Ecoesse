@@ -59,9 +59,9 @@ export const Footer: React.FC = () => {
           <Link href="/admin" className="hover:text-emerald-400 transition-colors">
             {dict.footer.adminDashboard}
           </Link>
-          <Link href="/impact/demo_order_123" className="hover:text-emerald-400 transition-colors">
-            {dict.footer.impactVerification}
-          </Link>
+          {/* No generic impact-certificate link here either, for the
+              same reason as the header: certificates are per-order,
+              and the old demo link now correctly shows not-found. */}
           <span className="text-slate-600">© {new Date().getFullYear()} Ecoesse Inc.</span>
         </div>
       </div>
