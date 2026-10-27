@@ -93,7 +93,6 @@
     "canadianTitle": "Canadian Owned & Operated",
     "engineName": "Ecoesse Commerce Engine",
     "engineTech": "Next.js 15+ App Router • Firebase • Stripe",
-    "impactVerification": "Impact Verification",
     "oceanText": "Recovers ocean-bound plastic bottles before reaching waterways.",
     "oceanTitle": "Ocean Plastic Recovery",
     "treeText": "Every single order plants native trees via Greenspark.",
@@ -104,7 +103,6 @@
     "allProducts": "All Products",
     "cart": "Cart",
     "household": "Household",
-    "impactCertificate": "Impact Certificate",
     "personalCare": "Personal Care",
     "petCare": "Pet Care",
     "tickerBottles": "Ocean Bottles Removed",
@@ -136,8 +134,7 @@
     "valueCard3Title": "Zero Monthly Overhead Admin",
     "valueEyebrow": "Engineered for Transparency",
     "valueText": "No expensive third-party apps, no monthly overhead, and 100% verified sustainability.",
-    "valueTitle": "Better Than Standard E-Commerce",
-    "viewLedger": "View Impact Ledger"
+    "valueTitle": "Better Than Standard E-Commerce"
   },
   "impact": {
     "badge": "Official Impact Certificate",
