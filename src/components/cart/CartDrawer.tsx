@@ -35,9 +35,13 @@ export const CartDrawer: React.FC = () => {
 
       if (data.url) {
         window.location.href = data.url;
-      } else if (data.demoMode) {
-        // Stripe keys are in test/mock mode
-        window.location.href = `/impact/${data.orderId || 'demo_order_123'}`;
+      } else if (data.demoMode && data.orderId) {
+        // Stripe keys are in test/mock mode: only redirect to a
+        // certificate for a real order id. A missing order id used to
+        // fall back to a demo order, which since PR #6 renders a
+        // not-found state — surfacing a checkout error instead is
+        // more honest than sending the shopper to a dead certificate.
+        window.location.href = `/impact/${data.orderId}`;
       } else {
         throw new Error(data.error || dict.cart.checkoutFailed);
       }
