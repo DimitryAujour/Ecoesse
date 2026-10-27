@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { useLocale } from '@/context/LocaleContext';
 import { LocaleSwitcher } from './LocaleSwitcher';
-import { ShoppingBag, Sprout, Trees, Waves, Shield, User } from 'lucide-react';
+import { ShoppingBag, Sprout, Trees, Waves, User } from 'lucide-react';
 
 export const Header: React.FC = () => {
   const { totals, setIsCartOpen } = useCart();
@@ -66,12 +66,11 @@ export const Header: React.FC = () => {
           <Link href="/?category=pet-care" className="hover:text-emerald-400 transition-colors">
             {dict.header.petCare}
           </Link>
-          <Link
-            href="/impact/demo_order_123"
-            className="flex items-center gap-1 text-emerald-400 hover:text-emerald-300 transition-colors"
-          >
-            <Shield className="w-3.5 h-3.5" /> {dict.header.impactCertificate}
-          </Link>
+          {/* No generic impact-certificate link: certificates are
+              per-order (/impact/[orderId]) and only exist for real
+              orders. The old demo link has been removed because, since
+              PR #6, it correctly rendered a not-found state instead
+              of a fake certificate. */}
         </nav>
 
         {/* Right Actions: Admin & Cart */}
