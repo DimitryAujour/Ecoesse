@@ -5,7 +5,7 @@ import { auth, googleProvider, db } from '@/lib/firebase/client';
 import { signInWithPopup, signOut, onAuthStateChanged, User } from 'firebase/auth';
 import { collection, doc, setDoc, getDocs, updateDoc } from 'firebase/firestore';
 import { SAMPLE_PRODUCTS, INITIAL_GLOBAL_IMPACT } from '@/lib/seed/products';
-import { Product } from '@/types/commerce';
+import { Product, Order } from '@/types/commerce';
 import {
   ShieldCheck,
   Lock,
@@ -42,6 +42,38 @@ export default function AdminPage() {
   const [isSeeding, setIsSeeding] = useState<boolean>(false);
   const [seedSuccess, setSeedSuccess] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'inventory' | 'orders' | 'settings'>('inventory');
+  // Real orders for the orders tab. Loaded only once the admin-claim
+  // gate has passed (isAdmin === true), because the M-01 Firestore
+  // rules allow listing orders for admins only. This page is
+  // admin-only by that gate, so rendering customerEmail and the
+  // shipping destination here is an admin view — never public, unlike
+  // the /impact/[orderId] page, which must never show those fields.
+  // The Stripe webhook currently writes orders without an items field,
+  // so items are rendered only when a record actually carries them.
+  const [orders, setOrders] = useState<Order[] | null>(null);
+  const [ordersLoading, setOrdersLoading] = useState<boolean>(false);
+  const [ordersError, setOrdersError] = useState<boolean>(false);
+
+  const loadOrders = async () => {
+    setOrdersLoading(true);
+    setOrdersError(false);
+    try {
+      const snap = await getDocs(collection(db, 'orders'));
+      const list = snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Order, 'id'>) }));
+      list.sort((a, b) => String(b.createdAt ?? '').localeCompare(String(a.createdAt ?? '')));
+      setOrders(list.slice(0, 50));
+    } catch (err) {
+      console.warn('Admin orders load failed:', err);
+      setOrdersError(true);
+      setOrders(null);
+    } finally {
+      setOrdersLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAdmin) loadOrders();
+  }, [isAdmin]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -297,7 +329,10 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* TAB 2: ORDERS & FULFILLMENT */}
+      {/* TAB 2: ORDERS & FULFILLMENT — real Firestore orders, newest
+          first, up to 50. The old tab was a single hardcoded sample
+          order (fake email, fake $54.48 total, fake Montreal address,
+          and a demo certificate link); it is removed entirely. */}
       {activeTab === 'orders' && (
         <div className="space-y-6">
           <div>
@@ -307,39 +342,122 @@ export default function AdminPage() {
             </p>
           </div>
 
-          <div className="p-6 rounded-2xl eco-glass border border-white/10 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-white/10">
-              <div>
-                <span className="text-xs font-bold text-white">{dict.admin.sampleOrder} #ORD-9824-CA</span>
-                <span className="text-[11px] text-slate-400 block mt-0.5">{dict.admin.customer}: customer@ecoesse.ca</span>
-              </div>
-              <span className="px-2.5 py-1 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px] font-bold uppercase">
-                {dict.admin.paid} ($54.48 CAD)
-              </span>
-            </div>
+          {ordersLoading && (
+            <p className="text-xs text-slate-400">{dict.admin.loading}</p>
+          )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-              <div>
-                <span className="text-slate-500 uppercase text-[10px]">{dict.admin.destination}:</span>
-                <p className="text-slate-300 font-medium">Montreal, Quebec, H2X 1Y4, Canada</p>
-              </div>
-              <div>
-                <span className="text-slate-500 uppercase text-[10px]">{dict.admin.fulfillment}:</span>
-                <p className="text-amber-400 font-bold flex items-center gap-1">
-                  <Truck className="w-3.5 h-3.5" /> {dict.admin.fulfillmentProcessing}
-                </p>
-              </div>
-              <div>
-                <span className="text-slate-500 uppercase text-[10px]">{dict.admin.impactLedger}:</span>
-                <Link
-                  href="/impact/demo_order_123"
-                  className="text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1"
-                >
-                  {dict.admin.viewCertificate} <ExternalLink className="w-3 h-3" />
-                </Link>
-              </div>
+          {ordersError && (
+            <div className="p-6 rounded-2xl eco-glass border border-rose-500/30 space-y-3">
+              <p className="text-xs text-rose-300 leading-relaxed">{dict.admin.loadError}</p>
+              <button
+                onClick={loadOrders}
+                className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white font-semibold text-xs border border-white/10"
+              >
+                {dict.admin.retry}
+              </button>
             </div>
-          </div>
+          )}
+
+          {!ordersLoading && !ordersError && orders && orders.length === 0 && (
+            <p className="text-xs text-slate-400">{dict.admin.empty}</p>
+          )}
+
+          {!ordersLoading && !ordersError && orders && orders.map((order) => {
+            const paymentLabel =
+              {
+                paid: dict.admin.paymentPaid,
+                pending: dict.admin.paymentPending,
+                failed: dict.admin.paymentFailed,
+                refunded: dict.admin.paymentRefunded,
+              }[order.paymentStatus as string] ?? order.paymentStatus;
+            const fulfillmentLabel =
+              {
+                unfulfilled: dict.admin.fulfillmentUnfulfilled,
+                shipped: dict.admin.fulfillmentShipped,
+                delivered: dict.admin.fulfillmentDelivered,
+              }[order.fulfillmentStatus as string] ?? order.fulfillmentStatus;
+            const impact = order.impactRecord;
+            const isVerified = impact?.greensparkStatus === 'verified' && !!impact?.greensparkTransactionId;
+            const dateLocale = locale === 'fr' ? 'fr-CA' : 'en-CA';
+            const orderDate = order.createdAt
+              ? new Date(
+                  typeof order.createdAt === 'string'
+                    ? order.createdAt
+                    : typeof order.createdAt?.toDate === 'function'
+                      ? order.createdAt.toDate()
+                      : order.createdAt.seconds
+                        ? order.createdAt.seconds * 1000
+                        : order.createdAt,
+                ).toLocaleDateString(dateLocale, { year: 'numeric', month: 'short', day: 'numeric' })
+              : null;
+            const address = order.shippingAddress;
+            const addressLine = address
+              ? [address.city, address.state, address.postalCode, address.country].filter(Boolean).join(', ')
+              : '';
+            return (
+              <div key={order.id} className="p-6 rounded-2xl eco-glass border border-white/10 space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                  <div>
+                    <span className="text-xs font-bold text-white">
+                      #{order.id.length > 8 ? `…${order.id.slice(-8).toUpperCase()}` : order.id}
+                    </span>
+                    <span className="text-[11px] text-slate-400 block mt-0.5">
+                      {dict.admin.customer}: {order.customerEmail}
+                    </span>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px] font-bold uppercase">
+                    {paymentLabel} ({((order.totalAmountCents ?? 0) / 100).toFixed(2)} CAD)
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                  <div>
+                    <span className="text-slate-500 uppercase text-[10px]">{dict.admin.date}:</span>
+                    <p className="text-slate-300 font-medium">{orderDate ?? '—'}</p>
+                    {addressLine && (
+                      <>
+                        <span className="text-slate-500 uppercase text-[10px]">{dict.admin.destination}:</span>
+                        <p className="text-slate-300 font-medium">{addressLine}</p>
+                      </>
+                    )}
+                  </div>
+                  <div>
+                    <span className="text-slate-500 uppercase text-[10px]">{dict.admin.fulfillment}:</span>
+                    <p className="text-amber-400 font-bold flex items-center gap-1">
+                      <Truck className="w-3.5 h-3.5" /> {fulfillmentLabel}
+                    </p>
+                    {order.trackingNumber && (
+                      <p className="text-slate-400 mt-1">{order.trackingNumber}</p>
+                    )}
+                  </div>
+                  <div>
+                    <span className="text-slate-500 uppercase text-[10px]">{dict.admin.impactLedger}:</span>
+                    <p className="text-slate-300 font-medium">
+                      {isVerified
+                        ? `${dict.admin.verified} — +${impact!.treesPlanted} ${dict.impact.trees}, +${impact!.plasticSaved} ${dict.impact.bottles}, +${impact!.carbonOffset} kg`
+                        : dict.admin.pendingImpact}
+                    </p>
+                    <Link
+                      href={`/impact/${order.id}`}
+                      className="text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1 mt-1"
+                    >
+                      {dict.admin.viewCertificate} <ExternalLink className="w-3 h-3" />
+                    </Link>
+                  </div>
+                </div>
+
+                {Array.isArray(order.items) && order.items.length > 0 && (
+                  <ul className="text-xs text-slate-400 space-y-1 pt-2 border-t border-white/10">
+                    {order.items.map((item, i) => (
+                      <li key={i}>
+                        {item.title} × {item.quantity}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 
