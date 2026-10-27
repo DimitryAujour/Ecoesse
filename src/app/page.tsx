@@ -2,7 +2,6 @@ import React from 'react';
 import { SAMPLE_PRODUCTS, INITIAL_GLOBAL_IMPACT } from '@/lib/seed/products';
 import { ProductGrid } from '@/components/products/ProductGrid';
 import { Trees, Waves, Wind, ShieldCheck, ArrowRight, Sparkles, CheckCircle2 } from 'lucide-react';
-import Link from 'next/link';
 import { getServerLocale } from '@/lib/i18n/server';
 import { getDictionary } from '@/lib/i18n/dictionary';
 
@@ -48,12 +47,10 @@ export default async function HomePage() {
               {dict.home.shopCta} <ArrowRight className="w-4 h-4" />
             </a>
 
-            <Link
-              href="/impact/demo_order_123"
-              className="px-5 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-semibold text-sm border border-white/10 flex items-center gap-2 transition-all"
-            >
-              <ShieldCheck className="w-4 h-4 text-emerald-400" /> {dict.home.viewLedger}
-            </Link>
+            {/* No "View Impact Ledger" button here: certificates are
+                per-order (/impact/[orderId]) for real orders only, and
+                the old demo link has been removed for the same reason
+                as the header/footer links. */}
           </div>
 
           {/* Environmental Assurance Badges */}
