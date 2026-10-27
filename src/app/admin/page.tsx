@@ -38,7 +38,37 @@ export default function AdminPage() {
   // and a claim set server-side is only picked up after a token
   // refresh, which is why getIdTokenResult is forced here.
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [products, setProducts] = useState<Product[]>(SAMPLE_PRODUCTS);
+  // Inventory, wired to real Firestore products (follow-up to the
+  // orders tab). The old table rendered SAMPLE_PRODUCTS from code and
+  // the +/- stock buttons only changed local state, so stock changes
+  // never persisted and the table showed the sample catalog whether
+  // or not Firestore had been seeded. The table now loads the
+  // products collection (admin read under the M-01 rules) once the
+  // claim gate passes, and stock changes write through to Firestore.
+  const [products, setProducts] = useState<Product[]>([]);
+  const [productsLoading, setProductsLoading] = useState<boolean>(false);
+  const [productsError, setProductsError] = useState<boolean>(false);
+
+  const loadProducts = async () => {
+    setProductsLoading(true);
+    setProductsError(false);
+    try {
+      const snap = await getDocs(collection(db, 'products'));
+      const list = snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Product, 'id'>) }));
+      list.sort((a, b) => a.id.localeCompare(b.id));
+      setProducts(list);
+    } catch (err) {
+      console.warn('Admin products load failed:', err);
+      setProductsError(true);
+    } finally {
+      setProductsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAdmin) loadProducts();
+  }, [isAdmin]);
+
   const [isSeeding, setIsSeeding] = useState<boolean>(false);
   const [seedSuccess, setSeedSuccess] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'inventory' | 'orders' | 'settings'>('inventory');
@@ -123,6 +153,9 @@ export default function AdminPage() {
       await setDoc(doc(db, 'site_stats', 'global_impact'), INITIAL_GLOBAL_IMPACT);
 
       setSeedSuccess(dict.admin.seedSuccess);
+      // Refresh the table from what was actually written, rather
+      // than assuming the sample catalog is what Firestore holds.
+      await loadProducts();
     } catch (err: any) {
       console.warn('Firestore seeding info (permission or offline):', err.message);
       setSeedSuccess(dict.admin.seedDemo);
@@ -131,13 +164,29 @@ export default function AdminPage() {
     }
   };
 
-  const handleUpdateStock = (productId: string, delta: number) => {
+  const handleUpdateStock = async (productId: string, delta: number) => {
     if (!isAdmin) return;
+    const current = products.find((p) => p.id === productId);
+    if (!current) return;
+    const newCount = Math.max(0, current.inventoryCount + delta);
+    // Optimistic update, reverted if the Firestore write fails, so
+    // the table never claims a stock change that did not persist.
     setProducts((prev) =>
-      prev.map((p) =>
-        p.id === productId ? { ...p, inventoryCount: Math.max(0, p.inventoryCount + delta) } : p
-      )
+      prev.map((p) => (p.id === productId ? { ...p, inventoryCount: newCount } : p))
     );
+    try {
+      await updateDoc(doc(db, 'products', productId), {
+        inventoryCount: newCount,
+        updatedAt: new Date().toISOString(),
+      });
+    } catch (err) {
+      console.warn('Admin stock update failed, reverting:', err);
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.id === productId ? { ...p, inventoryCount: current.inventoryCount } : p
+        )
+      );
+    }
   };
 
   return (
@@ -272,6 +321,27 @@ export default function AdminPage() {
             </button>
           </div>
 
+          {productsLoading && (
+            <p className="text-xs text-slate-400">{dict.admin.productsLoading}</p>
+          )}
+
+          {productsError && (
+            <div className="p-6 rounded-2xl eco-glass border border-rose-500/30 space-y-3">
+              <p className="text-xs text-rose-300 leading-relaxed">{dict.admin.productsLoadError}</p>
+              <button
+                onClick={loadProducts}
+                className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white font-semibold text-xs border border-white/10"
+              >
+                {dict.admin.retry}
+              </button>
+            </div>
+          )}
+
+          {!productsLoading && !productsError && products.length === 0 && (
+            <p className="text-xs text-slate-400">{dict.admin.productsEmpty}</p>
+          )}
+
+          {products.length > 0 && (
           <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#0e1713]">
             <table className="w-full text-left text-xs text-slate-300 divide-y divide-white/5">
               <thead className="bg-black/40 text-slate-400 uppercase text-[10px] tracking-wider">
@@ -326,6 +396,7 @@ export default function AdminPage() {
               </tbody>
             </table>
           </div>
+          )}
         </div>
       )}
 
