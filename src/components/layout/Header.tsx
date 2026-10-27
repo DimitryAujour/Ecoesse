@@ -1,31 +1,78 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { useLocale } from '@/context/LocaleContext';
 import { LocaleSwitcher } from './LocaleSwitcher';
 import { ShoppingBag, Sprout, Trees, Waves, User } from 'lucide-react';
+import { db } from '@/lib/firebase/client';
+import { doc, getDoc } from 'firebase/firestore';
 
 export const Header: React.FC = () => {
   const { totals, setIsCartOpen } = useCart();
-  const { dict } = useLocale();
+  const { dict, locale } = useLocale();
+  // Header impact ticker, wired to real stats (follow-up to the demo
+  // data cleanup). The old ticker hardcoded 1,420 trees and 18,450
+  // bottles — exactly the INITIAL_GLOBAL_IMPACT seed values — in code,
+  // so it could never move with real verified orders and would show
+  // those numbers even if the store had never sold anything.
+  // The ticker now reads site_stats/global_impact, which the M-01
+  // rules make publicly readable and which the Stripe webhook
+  // (M-02) increments only for verified orders. If the stats document
+  // does not exist or cannot be read, the numbers are omitted
+  // entirely rather than falling back to hardcoded figures.
+  // Honest limit: the stats document's own baseline is still the seed
+  // values the admin seeder writes (1,420 / 18,450 / 3,680 kg / 685
+  // orders), so this change makes the ticker data-driven, not
+  // independently verified. Replacing that baseline with audited
+  // Greenspark totals is a separate decision, flagged in the PR.
+  const [stats, setStats] = useState<{ trees: number; bottles: number } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const snap = await getDoc(doc(db, 'site_stats', 'global_impact'));
+        if (cancelled || !snap.exists()) return;
+        const data = snap.data();
+        const toNumber = (v: unknown): number | null => {
+          const n = Number(v);
+          return Number.isFinite(n) && n >= 0 ? n : null;
+        };
+        const trees = toNumber(data.totalTreesPlanted);
+        const bottles = toNumber(data.totalPlasticBottlesRemoved);
+        if (trees !== null && bottles !== null) setStats({ trees, bottles });
+      } catch {
+        // No stats, no numbers — never a hardcoded fallback.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const numberLocale = locale === 'fr' ? 'fr-CA' : 'en-CA';
 
   return (
     <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-[#09110d]/85 border-b border-emerald-950/60">
       {/* Live Environmental Impact Ticker */}
       <div className="bg-gradient-to-r from-emerald-950/80 via-forest-900 to-teal-950/80 border-b border-emerald-500/20 py-1.5 px-4 text-center text-[11px] font-medium text-emerald-200">
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-4 sm:gap-6 flex-wrap">
-          <span className="flex items-center gap-1.5">
-            <Trees className="w-3.5 h-3.5 text-emerald-400" />
-            <strong>1,420+</strong> {dict.header.tickerTrees}
-          </span>
-          <span className="hidden sm:inline text-emerald-700">•</span>
-          <span className="flex items-center gap-1.5">
-            <Waves className="w-3.5 h-3.5 text-cyan-400" />
-            <strong>18,450+</strong> {dict.header.tickerBottles}
-          </span>
-          <span className="hidden md:inline text-emerald-700">•</span>
+          {stats && (
+            <>
+              <span className="flex items-center gap-1.5">
+                <Trees className="w-3.5 h-3.5 text-emerald-400" />
+                <strong>{stats.trees.toLocaleString(numberLocale)}</strong> {dict.header.tickerTrees}
+              </span>
+              <span className="hidden sm:inline text-emerald-700">•</span>
+              <span className="flex items-center gap-1.5">
+                <Waves className="w-3.5 h-3.5 text-cyan-400" />
+                <strong>{stats.bottles.toLocaleString(numberLocale)}</strong> {dict.header.tickerBottles}
+              </span>
+              <span className="hidden md:inline text-emerald-700">•</span>
+            </>
+          )}
           <span className="hidden md:flex items-center gap-1.5 text-emerald-300/80">
             🍁 {dict.header.tickerShipping}
           </span>
