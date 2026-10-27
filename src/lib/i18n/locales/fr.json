@@ -93,7 +93,6 @@
     "canadianTitle": "Entreprise canadienne",
     "engineName": "Moteur de commerce Ecoesse",
     "engineTech": "Next.js 15+ App Router • Firebase • Stripe",
-    "impactVerification": "Vérification d'impact",
     "oceanText": "Récupère les bouteilles de plastique destinées aux océans avant qu'elles n'atteignent les cours d'eau.",
     "oceanTitle": "Récupération du plastique océanique",
     "treeText": "Chaque commande plante des arbres indigènes grâce à Greenspark.",
@@ -104,7 +103,6 @@
     "allProducts": "Tous les produits",
     "cart": "Panier",
     "household": "Maison",
-    "impactCertificate": "Certificat d'impact",
     "personalCare": "Soins personnels",
     "petCare": "Animaux de compagnie",
     "tickerBottles": "Bouteilles retirées des océans",
@@ -136,8 +134,7 @@
     "valueCard3Title": "Administration sans frais mensuels",
     "valueEyebrow": "Conçu pour la transparence",
     "valueText": "Aucune application tierce coûteuse, aucun frais mensuel, et une durabilité 100 % vérifiée.",
-    "valueTitle": "Mieux que le commerce électronique standard",
-    "viewLedger": "Voir le registre d'impact"
+    "valueTitle": "Mieux que le commerce électronique standard"
   },
   "impact": {
     "badge": "Certificat d'impact officiel",
