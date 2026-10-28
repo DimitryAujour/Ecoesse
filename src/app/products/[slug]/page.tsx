@@ -1,5 +1,5 @@
 import React from 'react';
-import { SAMPLE_PRODUCTS } from '@/lib/seed/products';
+import { getCatalogProducts } from '@/lib/products/catalog';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -15,7 +15,10 @@ interface ProductPageProps {
 
 export default async function ProductDetailPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  const product = SAMPLE_PRODUCTS.find((p) => p.slug === slug);
+  // Same catalog source as the homepage, so a product's stock and
+  // status cannot disagree between the grid and its detail page.
+  const catalog = await getCatalogProducts();
+  const product = catalog.find((p) => p.slug === slug);
   const locale = await getServerLocale();
   const dict = getDictionary(locale);
 
