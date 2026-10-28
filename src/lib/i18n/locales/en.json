@@ -34,6 +34,9 @@
     "productsLoadError": "Could not load products. Check that the Firestore rules are deployed and your account has the admin claim, then try again.",
     "productsLoading": "Loading products…",
     "retry": "Retry",
+    "save": "Save",
+    "saveError": "Could not save. Please try again.",
+    "saved": "Saved",
     "seed": "Seed 4 Products to Cloud Firestore",
     "seedDemo": "Demo products initialized in catalog.",
     "seedSuccess": "Successfully seeded 4 products and global stats into Cloud Firestore!",
@@ -55,6 +58,7 @@
     "tableStatus": "Status",
     "title": "Ecoesse Admin Engine",
     "total": "Total",
+    "tracking": "Tracking number",
     "verified": "Verified",
     "viewCertificate": "View Public Certificate"
   },
