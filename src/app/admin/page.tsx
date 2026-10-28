@@ -25,6 +25,107 @@ import Link from 'next/link';
 import { useLocale } from '@/context/LocaleContext';
 import { localizedTitle } from '@/lib/i18n/product';
 
+// Fulfillment editor for one order (follow-up to the read-only orders
+// tab). The orders tab showed fulfillment status and tracking but gave
+// the admin no way to change them, so fulfilling an order meant
+// editing Firestore by hand. This editor writes fulfillmentStatus and
+// trackingNumber back to the order document (admin writes are allowed
+// under the M-01 rules). It does not touch payment, impact, or
+// customer fields, and it never fabricates a tracking number: an
+// empty tracking field saves as null. On a failed write the inputs
+// revert to the order's stored values and an error is shown, so the
+// card never claims a change that did not persist.
+function FulfillmentEditor({
+  order,
+  dict,
+  onSaved,
+}: {
+  order: Order;
+  dict: any;
+  onSaved: (updated: Order) => void;
+}) {
+  const [fulfillmentStatus, setFulfillmentStatus] = useState<string>(
+    order.fulfillmentStatus ?? 'unfulfilled'
+  );
+  const [trackingNumber, setTrackingNumber] = useState<string>(
+    order.trackingNumber ?? ''
+  );
+  const [saving, setSaving] = useState<boolean>(false);
+  const [saved, setSaved] = useState<boolean>(false);
+  const [saveError, setSaveError] = useState<boolean>(false);
+
+  const changed =
+    fulfillmentStatus !== (order.fulfillmentStatus ?? 'unfulfilled') ||
+    trackingNumber !== (order.trackingNumber ?? '');
+
+  const handleSave = async () => {
+    setSaving(true);
+    setSaved(false);
+    setSaveError(false);
+    const next: Order = {
+      ...order,
+      fulfillmentStatus: fulfillmentStatus as Order['fulfillmentStatus'],
+      trackingNumber: trackingNumber.trim() ? trackingNumber.trim() : null,
+    };
+    try {
+      await updateDoc(doc(db, 'orders', order.id), {
+        fulfillmentStatus: next.fulfillmentStatus,
+        trackingNumber: next.trackingNumber,
+      });
+      onSaved(next);
+      setSaved(true);
+    } catch (err) {
+      console.warn('Admin fulfillment save failed:', err);
+      setFulfillmentStatus(order.fulfillmentStatus ?? 'unfulfilled');
+      setTrackingNumber(order.trackingNumber ?? '');
+      setSaveError(true);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="pt-4 border-t border-white/10 flex flex-wrap items-end gap-3 text-xs">
+      <label className="flex flex-col gap-1 text-slate-400">
+        <span className="uppercase text-[10px] text-slate-500">{dict.admin.fulfillment}:</span>
+        <select
+          value={fulfillmentStatus}
+          onChange={(e) => {
+            setFulfillmentStatus(e.target.value);
+            setSaved(false);
+          }}
+          className="px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white font-semibold"
+        >
+          <option value="unfulfilled">{dict.admin.fulfillmentUnfulfilled}</option>
+          <option value="shipped">{dict.admin.fulfillmentShipped}</option>
+          <option value="delivered">{dict.admin.fulfillmentDelivered}</option>
+        </select>
+      </label>
+      <label className="flex flex-col gap-1 text-slate-400 flex-1 min-w-[180px]">
+        <span className="uppercase text-[10px] text-slate-500">{dict.admin.tracking}:</span>
+        <input
+          value={trackingNumber}
+          onChange={(e) => {
+            setTrackingNumber(e.target.value);
+            setSaved(false);
+          }}
+          placeholder={dict.admin.tracking}
+          className="px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white font-medium"
+        />
+      </label>
+      <button
+        onClick={handleSave}
+        disabled={!changed || saving}
+        className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold"
+      >
+        {saving ? '…' : dict.admin.save}
+      </button>
+      {saved && <span className="text-emerald-400 font-semibold">{dict.admin.saved}</span>}
+      {saveError && <span className="text-rose-300 font-medium">{dict.admin.saveError}</span>}
+    </div>
+  );
+}
+
 export default function AdminPage() {
   const { dict, locale } = useLocale();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -526,6 +627,16 @@ export default function AdminPage() {
                     ))}
                   </ul>
                 )}
+
+                <FulfillmentEditor
+                  order={order}
+                  dict={dict}
+                  onSaved={(updated) =>
+                    setOrders((prev) =>
+                      prev ? prev.map((o) => (o.id === updated.id ? updated : o)) : prev
+                    )
+                  }
+                />
               </div>
             );
           })}
