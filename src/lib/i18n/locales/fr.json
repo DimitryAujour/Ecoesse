@@ -34,6 +34,9 @@
     "productsLoadError": "Impossible de charger les produits. Vérifiez que les règles Firestore sont déployées et que votre compte possède le droit administrateur, puis réessayez.",
     "productsLoading": "Chargement des produits…",
     "retry": "Réessayer",
+    "save": "Enregistrer",
+    "saveError": "Impossible d'enregistrer. Veuillez réessayer.",
+    "saved": "Enregistré",
     "seed": "Importer 4 produits dans Cloud Firestore",
     "seedDemo": "Produits de démonstration initialisés dans le catalogue.",
     "seedSuccess": "4 produits et les statistiques mondiales ont été importés avec succès dans Cloud Firestore !",
@@ -55,6 +58,7 @@
     "tableStatus": "Statut",
     "title": "Moteur d'administration Ecoesse",
     "total": "Total",
+    "tracking": "Numéro de suivi",
     "verified": "Vérifié",
     "viewCertificate": "Voir le certificat public"
   },
