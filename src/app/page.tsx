@@ -1,5 +1,5 @@
 import React from 'react';
-import { SAMPLE_PRODUCTS } from '@/lib/seed/products';
+import { getCatalogProducts } from '@/lib/products/catalog';
 import { ProductGrid } from '@/components/products/ProductGrid';
 import { Trees, Waves, Wind, ShieldCheck, ArrowRight, Sparkles, CheckCircle2 } from 'lucide-react';
 import { getServerLocale } from '@/lib/i18n/server';
@@ -7,8 +7,10 @@ import { getDictionary } from '@/lib/i18n/dictionary';
 import { adminDb } from '@/lib/firebase/admin';
 
 export default async function HomePage() {
-  // Products dataset (sample seed or Firestore)
-  const products = SAMPLE_PRODUCTS;
+  // Products from Firestore when available (see
+  // src/lib/products/catalog.ts); the seed catalog is only the
+  // fallback for an unreadable or empty products collection.
+  const products = await getCatalogProducts();
   // Global impact stats, wired to real data (same change as the header
   // ticker). The old section rendered INITIAL_GLOBAL_IMPACT — the seed
   // values 1,420 trees / 18,450 bottles / 3,680 kg / 685 orders —
