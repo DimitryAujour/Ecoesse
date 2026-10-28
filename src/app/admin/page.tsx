@@ -290,6 +290,40 @@ export default function AdminPage() {
     }
   };
 
+  // Product status control. Until now the status column was a
+  // display-only badge, so there was no way in /admin to hide a
+  // product from the storefront: the PR #12 catalog loader only
+  // shows active products, but nothing in the UI could set a product
+  // to draft or archived. This select writes the status through to
+  // Firestore with the same optimistic-update-and-revert pattern as
+  // stock, so changing a product to draft/archived immediately
+  // removes it from the homepage catalog and detail pages, and
+  // changing it back to active restores it.
+  const handleUpdateStatus = async (
+    productId: string,
+    newStatus: 'active' | 'draft' | 'archived'
+  ) => {
+    if (!isAdmin) return;
+    const current = products.find((p) => p.id === productId);
+    if (!current || current.status === newStatus) return;
+    setProducts((prev) =>
+      prev.map((p) => (p.id === productId ? { ...p, status: newStatus } : p))
+    );
+    try {
+      await updateDoc(doc(db, 'products', productId), {
+        status: newStatus,
+        updatedAt: new Date().toISOString(),
+      });
+    } catch (err) {
+      console.warn('Admin status update failed, reverting:', err);
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.id === productId ? { ...p, status: current.status } : p
+        )
+      );
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       {/* Admin Top Header */}
@@ -488,9 +522,20 @@ export default function AdminPage() {
                       </div>
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800/60 font-semibold uppercase text-[10px]">
-                        {p.status === 'active' ? dict.admin.statusActive : p.status === 'draft' ? dict.admin.statusDraft : dict.admin.statusArchived}
-                      </span>
+                      <select
+                        value={p.status}
+                        onChange={(e) =>
+                          handleUpdateStatus(
+                            p.id,
+                            e.target.value as 'active' | 'draft' | 'archived'
+                          )
+                        }
+                        className="px-2 py-1.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800/60 font-semibold uppercase text-[10px]"
+                      >
+                        <option value="active">{dict.admin.statusActive}</option>
+                        <option value="draft">{dict.admin.statusDraft}</option>
+                        <option value="archived">{dict.admin.statusArchived}</option>
+                      </select>
                     </td>
                   </tr>
                 ))}
